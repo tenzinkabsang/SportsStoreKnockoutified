@@ -1,0 +1,47 @@
+﻿@model SportsStore.WebUI.Models.ProductListViewModel
+
+@{
+    ViewBag.Title = "List";
+}
+
+<h2>Products</h2>
+
+@Html.Partial("AjaxSummary")
+
+<div data-bind="foreach: Products">
+        @Html.Partial("ProductSummary")
+</div>
+
+<div class="pager">
+    @Html.PageLinks(Model.PagingInfo, x => Url.Action("List", new { category = Model.CurrentCategory, page = x}))
+</div>
+
+<script type="text/javascript">
+
+    var model = @Html.Raw(Json.Encode(Model));
+    
+    var viewModel = ko.mapping.fromJS(model);
+
+    viewModel.addToCart = function() {
+        $.ajax({
+            url: '@Url.Action("AjaxAdd", "Cart")',
+            type: 'post',
+            data: ko.toJSON(this),
+            contentType: 'application/json',
+            success: function(result) {
+                viewModel.CartQuantity(result.cartQuantity);
+                viewModel.CartTotal(result.cartTotal);
+            }
+        });
+    };
+    
+    function formatCurrency(value) {
+        var price = ko.mapping.toJS(value);
+        return '$' + price.toFixed(2);
+    }
+
+    $(function() {
+
+        ko.applyBindings(viewModel);
+    });
+</script>

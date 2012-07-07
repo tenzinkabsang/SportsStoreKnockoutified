@@ -1,0 +1,22 @@
+﻿
+<div class="item">
+    <h3 data-bind="text: Name"></h3>
+    <span data-bind="text: Description"></span>
+   
+    <form action="Cart/AddToCart" method="POST">
+        <input data-bind="value: ProductID" type="hidden" name="productID"/>
+
+        <input type="hidden" name="returnUrl" value="@Request.Url.PathAndQuery"/>
+        <table>
+            <tr>
+                <td><input type="submit" value="+ Add to cart"/></td>
+                <td><input type="button" value="+ Ajax Add to cart" data-bind="click: $parent.addToCart" /></td>
+            </tr>
+        </table>
+        
+    </form>
+    
+    
+    <h4 data-bind="text: formatCurrency(Price)"></h4>
+</div>
+

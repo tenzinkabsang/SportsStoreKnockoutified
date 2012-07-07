@@ -1,0 +1,22 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>@ViewBag.Title</title>
+        <link href="@Url.Content("~/Content/adminstyles.css")" rel="stylesheet" type="text/css"/>
+        @Html.Partial("_ScriptPartial")
+    </head>
+<body>
+    <div>
+        @if(TempData["message"] != null)
+        {
+            <div class="Message">@TempData["message"]</div>
+        }
+        @RenderBody()
+    </div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+﻿@model SportsStore.WebUI.Models.CartIndexViewModel
+
+@{
+    ViewBag.Title = "Sports Store: Your Cart";
+}
+
+<h2>Your cart</h2>
+<table width="90%" align="center">
+    <thead>
+        <tr>
+            <th align="center">Quantity</th>
+            <th align="left">Item</th>
+            <th align="right">Price</th>
+            <th align="right">Subtotal</th>
+        </tr>
+    </thead>
+    <tbody data-bind="foreach: lines">
+        <tr>
+            <td align="center"><span data-bind="text: quantity"></span></td>
+            <td align="left"><span data-bind="text: name"></span></td>
+            <td align="right"><span data-bind="text: price"></span></td>
+            <td align="right"><span data-bind="text: subtotal"></span></td>
+            <td>
+                <form action="RemoveFromCart">
+                    <input type="hidden" data-bind="value: productId" name="productId"/>
+                    <input type="hidden" data-bind="value: $parent.returnUrl" name="returnUrl"/>
+                    
+                    
+                    <table>
+                        <tr>
+                            <td><input type="submit" value="Remove" class="actionButtons"/></td>
+                            <td><input type="button" value="Ajax Remove" class="actionButtons" data-bind="click: $parent.remove"></td>
+                        </tr>
+                    </table>
+
+                </form>
+                
+            </td>
+        </tr>
+    </tbody> 
+    <tfoot>
+        <tr>
+            <td colspan="3" align="right">Total:</td>
+            <td align="right"><span data-bind="text: computedTotalValue"></span></td>
+        </tr>
+    </tfoot>   
+</table>
+<p align="center" class="actionButtons">
+    <a href="@Model.ReturnUrl">Continue shopping</a>
+    @Html.ActionLink("Checkout now", "Checkout")
+</p>
+
+<script type="text/javascript">
+
+    // binding viewmodel manually
+    function ViewModel(model) {
+        var self = this;
+
+        self.Cart = ko.observable(model.Cart);
+        self.returnUrl = ko.observable(model.ReturnUrl);
+
+        self.lines = ko.observableArray(ko.utils.arrayMap(model.Cart.Lines, function(lineItem) {
+            return {
+                productId: lineItem.Product.ProductID,
+                quantity: lineItem.Quantity,
+                name: lineItem.Product.Name,
+                price: lineItem.Product.Price,
+                subtotal: lineItem.Quantity * lineItem.Product.Price
+            };
+        }));
+
+        self.computedTotalValue = ko.computed(function() {
+            var total = 0;
+            $.each(self.lines(), function() { total += this.price * this.quantity });
+            return formatCurrency(total);
+        });
+
+        self.remove = function(line) {
+            $.ajax({
+                url: '@Url.Action("AjaxRemove")',
+                type: 'post',
+                data: ko.toJSON(this),
+                contentType: 'application/json',
+                success: function(result) {
+                    self.Cart(result.cart);
+                    self.lines.remove(line);
+                }
+            });
+        };
+    }
+
+    var model = @Html.Raw(Json.Encode(Model));
+
+    ko.applyBindings(new ViewModel(model));
+    
+     function formatCurrency(value) {
+        return '$' + value.toFixed(2);
+    }
+    
+
+</script>

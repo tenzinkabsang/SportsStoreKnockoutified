@@ -1,0 +1,92 @@
+﻿@model SportsStore.WebUI.Models.CartIndexViewModel
+
+@{
+    ViewBag.Title = "Your Cart";
+}
+
+<h2>Your cart</h2>
+@*
+<pre data-bind="text: ko.toJSON(lines, null, 2)"></pre>
+*@
+<table width="90%" align="center">
+    <thead>
+        <tr>
+            <th align="center">Quantity</th>
+            <th align="left">Item</th>
+            <th align="right">Price</th>
+            <th align="right">Subtotal</th>
+        </tr>
+    </thead>
+    <tbody data-bind="foreach: lines">
+        <tr>
+            <td align="center">
+                <input data-bind="value: Quantity, event: {change: $parent.updateQuantity}"/>
+            </td>
+            <td align="left"><span data-bind="text: Product.Name"></span></td>
+            <td align="right"><span data-bind="text: Product.Price"></span></td>
+            <td align="right"><span data-bind="text: LineTotal"></span></td>
+            <td>
+                <input type="button" class="actionButtons" value="Remove" data-bind="click: $parent.remove"/>
+            </td>
+        </tr>
+       
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3" align="right">Total:</td>
+            <td align="right"><span data-bind="text: total"></span></td>
+        </tr>
+    </tfoot>   
+</table>
+<p align="center" class="actionButtons">
+    <a href="@Model.ReturnUrl">Continue shopping</a>
+    @Html.ActionLink("Checkout now", "Checkout")
+</p>
+
+<script type="text/javascript">
+
+    $(function() {
+
+       
+        function IndexViewModel(data) {
+            var self = this;
+            self.model = ko.mapping.fromJS(data);
+            self.lines = self.model.Cart.Lines;
+            self.returnUrl = self.model.ReturnUrl;
+            self.total = self.model.Total;
+            
+             // Operations
+             self.updateQuantity = function() {
+                $.ajax({
+                    url: '@Url.Action("UpdateQuantity")',
+                    type: 'post',
+                    data: ko.toJSON(this),
+                    contentType: 'application/json',
+                    success: function(result) {
+                        if (result.success) {
+                            ko.mapping.fromJS(result.model, self.model);
+                        }
+                    }
+                });
+            };
+            self.remove = function(line) {
+                $.ajax({
+                    url: '@Url.Action("RemoveItem")',
+                    type: 'post',
+                    data: ko.toJSON(this),
+                    contentType: 'application/json',
+                    success: function(result) {
+                        if (result.success) {
+                            self.lines.remove(line);
+                            self.total(result.total);
+                        }
+                    }
+                });
+            };
+        }
+        var cartIndexViewModel = @Html.Raw(Json.Encode(Model));
+        ko.applyBindings(new IndexViewModel(cartIndexViewModel));
+    });
+    
+
+</script>

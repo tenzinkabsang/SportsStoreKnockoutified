@@ -1,0 +1,153 @@
+﻿@model IEnumerable<SportsStore.Domain.Entities.Product>
+@{
+    ViewBag.Title = "Index";
+}
+<h2>
+    All Products</h2>
+<div data-bind="visible: !isEditing()">
+    <table class="Grid">
+        <thead>
+            <tr>
+                <th>
+                    ID
+                </th>
+                <th>
+                    Name
+                </th>
+                <th class="NumericCol">
+                    Price
+                </th>
+                <th>
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: products">
+            <tr>
+                <td data-bind="text: ProductID">
+                </td>
+                <td>
+                    <a href="#" data-bind="text: Name, click: $parent.showEditView"></a>
+                </td>
+                <td data-bind="text: formatCurrencyWithDollarSign(Price)" class="NumericCol">
+                </td>
+                <td>
+                    <input type="button" data-bind="click: $parent.deleteProduct" value="Delete" class="actionButtons" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        <a href="#" data-bind="click: showCreateView">Add a new Product</a>
+    </p>
+</div>
+<div data-bind="visible: isEditing(), with: Product">
+    @Html.Partial("_ProductEdit")
+</div>
+<script type="text/javascript">
+
+    $(function() {
+
+        function Product() {
+            var self = this;
+
+            self.ProductID = ko.observable(0);
+            self.Name = ko.observable();
+            self.Description = ko.observable();
+            self.Price = ko.observable(0.00);
+            self.Category = ko.observable();
+        }
+    
+         function IndexViewModel(data) {
+             var self = this;
+
+             self.products = ko.mapping.fromJS(data);
+             
+             self.Product = ko.observable(new Product());
+
+             self.isEditing = ko.observable(false);
+
+             self.isCreating = ko.computed(function() {
+                 
+                 if (self.isEditing() && self.Product().ProductID() == 0)
+                     return true;
+
+                 return false;
+             });
+          
+             
+
+             self.showEditView = function(product) {
+                 self.isEditing(true);
+                 self.Product(product);
+             };
+
+             self.showCreateView = function () {
+                 self.isEditing(true);
+                 self.Product(new Product());
+             }
+
+             self.back = function() { self.isEditing(false) };
+             
+              self.updateProduct = function() {
+                $.ajax({
+                    url: '@Url.Action("AjaxEdit")',
+                    type: 'post',
+                    data: ko.toJSON(this),
+                    contentType: 'application/json',
+                    success: function(result) {
+                        if (result.success) {
+                            ko.mapping.fromJS(result.data);
+                            self.isEditing(false);
+                        }
+                    }
+                });
+            };
+
+             self.createProduct = function() {
+                 $.ajax({
+                     url: '@Url.Action("AjaxCreate")',
+                     type: 'post',
+                     data: ko.toJSON(this),
+                     contentType: 'application/json',
+                     success: function(result) {
+                         if (result.success) {
+                             self.isEditing(false);
+                             self.products.push(result.product);
+                         }
+                     }
+                 });
+             };
+             
+             self.deleteProduct = function (product) {
+                 $.ajax({
+                     url: '@Url.Action("AjaxDelete")',
+                     type: 'post',
+                     data: ko.toJSON(this),
+                     contentType: 'application/json',
+                     success: function (result) {
+                         if(result.success){ self.products.remove(product) }
+                     }
+                 });
+             };
+
+        }
+        
+         
+
+
+        var serverModel = @Html.Raw(Json.Encode(Model));
+
+        ko.applyBindings(new IndexViewModel(serverModel));
+    });
+    
+     function formatCurrencyWithDollarSign(value) {
+         var price = ko.mapping.toJS(value);
+         return '$' + price.toFixed(2);
+     }
+
+     function formatCurrency(value) {
+         var price = ko.mapping.toJS(value);
+         return price.toFixed(2);
+     }
+</script>

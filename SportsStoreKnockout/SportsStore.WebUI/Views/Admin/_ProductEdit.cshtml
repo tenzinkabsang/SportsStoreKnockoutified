@@ -1,0 +1,47 @@
+﻿
+
+    <fieldset>
+        <legend>
+            <span data-bind="text: $parent.isCreating() ? 'Create' : 'Edit'"></span>
+            <span data-bind="text: Name"></span>
+        </legend>
+        
+        <div class="editor-label">
+            Name
+        </div>
+        <div class="editor-field">
+            <input data-bind="value: Name"/>
+        </div>
+        
+        <div class="editor-label">
+            Description
+        </div>
+        <div class="editor-field">
+            <textarea rows="5" cols="40" data-bind="value: Description">
+            </textarea>
+        </div>
+        
+         <div class="editor-label">
+            Price
+        </div>
+        <div class="editor-field">
+            <input data-bind="value: Price"/>
+        </div>
+        
+         <div class="editor-label">
+            Category
+        </div>
+        <div class="editor-field">
+            <input data-bind="value: Category"/>
+        </div>
+        
+        <div data-bind="with: $parent">
+            <input type="button" class="actionButtons" data-bind="click: updateProduct, visible: !isCreating()" value="Edit"/>
+        
+            <input type="button" class="actionButtons" data-bind="click: createProduct, visible: isCreating()" value="Create"/>
+    
+            <input type="button" class="actionButtons" data-bind="click: back" value="Return to List"/>
+        </div>
+       
+
+    </fieldset>
